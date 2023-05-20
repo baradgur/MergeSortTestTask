@@ -5,13 +5,6 @@ namespace AltiumTestTask.TestFileGenerator;
 
 public class Program
 {
-    private static readonly int _defaultRandomizerSeed = 42;
-    private static readonly string _defaultTestFileName = "./testdata.txt";
-    private static readonly int _defaultSize = 1024;
-    private static readonly SizeCalculationMethod _defaultSizeCalculationMethod = SizeCalculationMethod.MegaBytes;
-    private static readonly int _defaultDictionarySize = 100;
-    private static readonly int _defaultFileFlushRowCount = 1000;
-    
     static async Task Main(string[] args)
     {
         var rootCommand = new RootCommand("Console app to generate a test file.");
@@ -19,37 +12,37 @@ public class Program
         var filePathOption = new Option<FileInfo>(
             name: "--filepath",
             description: "Path to file.");
-        filePathOption.SetDefaultValue(new FileInfo(_defaultTestFileName));
+        filePathOption.SetDefaultValue(new FileInfo(Defaults.DefaultTestFileName));
         rootCommand.AddOption(filePathOption);
 
         var sizeCalculationMethodOption = new Option<SizeCalculationMethod>(
             name: "--sizeCalculationMethod",
             description: "Units in which file size will be calculated.");
-        sizeCalculationMethodOption.SetDefaultValue(_defaultSizeCalculationMethod);
+        sizeCalculationMethodOption.SetDefaultValue(Defaults.DefaultSizeCalculationMethod);
         rootCommand.AddOption(sizeCalculationMethodOption);
         
         var sizeOption = new Option<int>(
             name: "--size",
             description: "Minimum size value.");
-        sizeOption.SetDefaultValue(_defaultSize);
+        sizeOption.SetDefaultValue(Defaults.DefaultSize);
         rootCommand.AddOption(sizeOption);
         
         var seedOption = new Option<int>(
             name: "--seed",
             description: "Randomizer seed.");
-        seedOption.SetDefaultValue(_defaultRandomizerSeed);
+        seedOption.SetDefaultValue(Defaults.DefaultRandomizerSeed);
         rootCommand.AddOption(seedOption);
         
         var dictionarySizeOption = new Option<int>(
             name: "--dictionarySize",
             description: "Amount of word to be used in 'String' part generation.");
-        dictionarySizeOption.SetDefaultValue(_defaultDictionarySize);
+        dictionarySizeOption.SetDefaultValue(Defaults.DefaultDictionarySize);
         rootCommand.AddOption(dictionarySizeOption);
 
         rootCommand.SetHandler(
             async (file, sizeCalculationMethod, sizeValue, seed, dictionarySize) =>
             {
-                var testFileCreator = new TestFileCreator(seed, dictionarySize, _defaultFileFlushRowCount);
+                var testFileCreator = new TestFileCreator(seed, dictionarySize);
                 var sizeCalculationOptions = new SizeCalculationOptions(sizeCalculationMethod, sizeValue);
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();

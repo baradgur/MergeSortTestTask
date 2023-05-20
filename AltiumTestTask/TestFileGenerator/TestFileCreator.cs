@@ -10,11 +10,20 @@ public class TestFileCreator
     private readonly int _defaultFileFlushRowCount;
     private readonly int _minWordsInSentence = 1;
     private readonly int _maxWordsInSentence = 4;
+    private readonly long _maxNumber;
+    private readonly long _minNumber;
 
-    public TestFileCreator(int seed, int dictionarySize, int defaultFileFlushRowCount)
+    public TestFileCreator(
+        int seed = Defaults.DefaultRandomizerSeed,
+        int dictionarySize = Defaults.DefaultDictionarySize,
+        long maxNumber = Defaults.MaxNumber,
+        long minNumber = Defaults.MinNumber,
+        int defaultFileFlushRowCount = Defaults.DefaultFileFlushRowCount)
     {
         _seed = seed;
         _dictionarySize = dictionarySize;
+        _maxNumber = maxNumber;
+        _minNumber = minNumber;
         _defaultFileFlushRowCount = defaultFileFlushRowCount;
     }
 
@@ -26,7 +35,7 @@ public class TestFileCreator
         var dictionary = new Faker().Lorem.Words(_dictionarySize);
         var testRowsFaker = new Faker<string>()
             .CustomInstantiator(
-                faker => $"{faker.Random.Long()}. " +
+                faker => $"{faker.Random.Long(_minNumber, _maxNumber)}. " +
                     $"{string.Join(" ", faker.PickRandom(dictionary, faker.Random.Int(_minWordsInSentence, _maxWordsInSentence)))}");
 
         await using var fileWriter = file.CreateText();
@@ -43,8 +52,9 @@ public class TestFileCreator
                     var data = testRowsFaker.Generate((int) countToGenerate);
                     var dataString = string.Join("\n", data);
                     await fileWriter.WriteAsync(dataString);
-                    generatedCount += _defaultFileFlushRowCount;
+                    await fileWriter.WriteAsync("\n");
                     await fileWriter.FlushAsync();
+                    generatedCount += _defaultFileFlushRowCount;
                 }
 
                 break;
@@ -56,6 +66,7 @@ public class TestFileCreator
                     var data = testRowsFaker.Generate(_defaultFileFlushRowCount);
                     var dataString = string.Join("\n", data);
                     await fileWriter.WriteAsync(dataString);
+                    await fileWriter.WriteAsync("\n");
                     await fileWriter.FlushAsync();
                     generatedCountBytes += dataString.Length;
                 }
