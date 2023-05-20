@@ -102,6 +102,11 @@ public class DataLineWithSeparatorReader
         while ((bytesRead = bufferedStream.Read(buffer, 0, MAX_BUFFER)) != 0)
         {
             memoryStream.Seek(0, SeekOrigin.Begin);
+            if (bytesRead < MAX_BUFFER)
+            {
+                Array.Clear(buffer, bytesRead, buffer.Length - bytesRead);
+            }
+
             bufferReads++;
             var firstReadInBuffer = true;
             while (!streamReader.EndOfStream)
@@ -154,6 +159,7 @@ public class DataLineWithSeparatorReader
                 //Console.WriteLine($"line {lineCount} data: '{data.Data}' separator: '{data.separatorPosition}'");
                 yield return new DataLineWithSeparator(line, line.IndexOf('.'));
             }
+            
         }
         //last string will nothing to append to it, so we return it as is
         if (bytesRead == 0)
