@@ -1,10 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltiumTestTask.Sorter", "Sorter\AltiumTestTask.Sorter\AltiumTestTask.Sorter.csproj", "{DDD26BE0-29A8-42C1-899C-6A0DB11B2971}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltiumTestTask.Sorter", "Sorter\AltiumTestTask.Sorter.csproj", "{DDD26BE0-29A8-42C1-899C-6A0DB11B2971}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltiumTestTask.TestFileGenerator", "TestFileGenerator\AltiumTestTask.TestFileGenerator.csproj", "{49C61CF9-4F7A-4106-9EE8-A7D7B6C9C7B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltiumTestTask.Benchmark", "AltiumTestTask.Benchmark\AltiumTestTask.Benchmark.csproj", "{C2BCF6A0-FEB1-425F-B78D-DE6D26ED1BE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltiumTestTask.Benchmark", "Benchmark\AltiumTestTask.Benchmark.csproj", "{C2BCF6A0-FEB1-425F-B78D-DE6D26ED1BE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltiumTestTask.Sorter.Tests", "Sorter.Tests\AltiumTestTask.Sorter.Tests.csproj", "{2757B3AA-AD64-4F5F-85F4-CB8E558709BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +26,9 @@ Global
 		{C2BCF6A0-FEB1-425F-B78D-DE6D26ED1BE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2BCF6A0-FEB1-425F-B78D-DE6D26ED1BE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2BCF6A0-FEB1-425F-B78D-DE6D26ED1BE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2757B3AA-AD64-4F5F-85F4-CB8E558709BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2757B3AA-AD64-4F5F-85F4-CB8E558709BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2757B3AA-AD64-4F5F-85F4-CB8E558709BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2757B3AA-AD64-4F5F-85F4-CB8E558709BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

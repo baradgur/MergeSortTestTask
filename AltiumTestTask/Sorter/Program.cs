@@ -25,43 +25,42 @@ Console.WriteLine("Hello, World!");
 // }
 
 
-var datareader = new DataLineWithSeparatorReader();
 
 var stopwatch = new Stopwatch();
 stopwatch.Start();
-var datas = datareader.GetDataMod().ToArray();
-stopwatch.Stop();
-Console.WriteLine($"reading completed it in {stopwatch.Elapsed}");
-stopwatch.Restart();
 var lines = File.ReadAllLines("testdata.txt");
 stopwatch.Stop();
-Console.WriteLine($"reading 2 completed it in {stopwatch.Elapsed}");
-foreach (var data in datas)
+Console.WriteLine($"ReadAllLines completed it in {stopwatch.Elapsed}");
+stopwatch.Restart();
+var bulkTextReader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded);
+using (FileStream fs = File.Open("testdata.txt", FileMode.Open, FileAccess.Read))
 {
-    //if(data.Data.Equals())
+    foreach (var bulkOfLines in bulkTextReader.ReadAllLinesBulk(fs))
+    {
+        Console.WriteLine($"got a bulk of {bulkOfLines.Length} lines in {stopwatch.Elapsed}");
+    }
+    stopwatch.Stop();
 }
+Console.WriteLine($"BulkTextReader completed it in {stopwatch.Elapsed}");
+using FileStream fs1 = File.Open("testdata.txt", FileMode.Open, FileAccess.Read);
+var result = bulkTextReader.ReadAllLinesBulk(fs1).SelectMany(a => a).ToArray();
 
+
+Console.WriteLine($"total dataCount: '{result.Length}'");
+Console.WriteLine($"total linesCount: '{lines.Length}'");
 for (int i = 0; i < lines.Length; i++)
 {
-    if (!datas[i].Data.Equals(lines[i]))
+    if (!result[i].Equals(lines[i]))
     {
         Debug.Assert(false,"sssss");
     } 
 }
-
-
-
-Console.WriteLine($"total dataCount: '{datas.Length}'");
-Console.WriteLine($"total linesCount: '{lines.Length}'");
-
-
 
 // var buffer = new byte[1024*1024].AsSpan();//megabyte
 // using var fileStream = File.Open("testdata.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
 // var res = fileStream.Read(buffer)
 
 
-// //TODO: pick name
 // public interface ISeparator
 // {
 //     Span<string> GetSeparated();
