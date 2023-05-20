@@ -29,7 +29,7 @@ var datareader = new DataLineWithSeparatorReader();
 
 var stopwatch = new Stopwatch();
 stopwatch.Start();
-var datas = datareader.GetData().ToArray();
+var datas = datareader.GetDataMod().ToArray();
 stopwatch.Stop();
 Console.WriteLine($"reading completed it in {stopwatch.Elapsed}");
 stopwatch.Restart();
@@ -99,13 +99,3 @@ Console.WriteLine($"total linesCount: '{lines.Length}'");
 //
 //Console.WriteLine(stopwatch.Elapsed);
 Console.WriteLine("Bye, world");
-
-public class TestClass
-{
-    private string _teststring; 
-    
-    public TestClass(string testString)
-    {
-        _teststring = testString;
-    }
-}
