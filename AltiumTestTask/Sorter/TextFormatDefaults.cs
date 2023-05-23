@@ -20,6 +20,7 @@ public static class TextFormatDefaults
 
     public class DataComparer : IComparer<string>
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Compare(string? x, string? y)
         {
             var span1 = x.AsSpan();

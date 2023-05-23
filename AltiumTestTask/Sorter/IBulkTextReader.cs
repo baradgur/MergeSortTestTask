@@ -18,8 +18,9 @@ public interface IBulkTextReader
     /// <returns>Array of strings.</returns>
     public IAsyncEnumerable<string[]> ReadAllLinesBulkAsync(Stream stream, CancellationToken cancellationToken);
     
+    //TODO: try ReadOnlyMemory<char>
     /// <summary>
-    /// Returns enumeration of all lines in stream, reading a buffer when necessary.    
+    /// Returns enumeration of all lines in stream, reading a buffer from stream whenever necessary.    
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="cancellationToken"></param>

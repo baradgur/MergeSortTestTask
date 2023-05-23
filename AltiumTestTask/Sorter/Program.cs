@@ -1,228 +1,71 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Numerics;
-using System.Text;
-using AltiumTestTask.Sorter;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.ObjectPool;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Sinks.FastConsole;
 
-var fileToProcess = "testdata.txt";
+namespace AltiumTestTask.Sorter;
 
-var defaultBufferSize = 1024 * 1024 * 64; //64MB
-
-var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(5)); //TODO: to constants or remove
-var cancellationToken = cancellationTokenSource.Token;
-
-var smallTimeout = TimeSpan.FromMilliseconds(10);
-//TODO: set bufferSize based on file size and available memory
-
-await using FileStream fs = File.Open(fileToProcess, FileMode.Open, FileAccess.Read);
-
-var availableMemory = GC.GetTotalMemory(false);
-
-var fileLength = (ulong)fs.Length;
-
-const ulong defaultMaxTempFiles = 256;
-ulong bufferSizeEstimateByTempFileCount = fileLength / defaultMaxTempFiles + (ulong) (fileLength % defaultMaxTempFiles == 0 ? 0 : 1);
-long bufferSizeEstimateByTempFileCountMaxPow2 = 1L << (BitOperations.Log2( bufferSizeEstimateByTempFileCount - 1) + 1);
-
-
-int bufferSize = (int) (bufferSizeEstimateByTempFileCountMaxPow2 < defaultBufferSize
-    ? defaultBufferSize
-    : bufferSizeEstimateByTempFileCountMaxPow2);
-
-bufferSize = (int) Math.Min(bufferSizeEstimateByTempFileCountMaxPow2, defaultBufferSize);
-var maxBufferSizeByMemory = GetPowerOfTwoLessThanOrEqualTo(availableMemory/3);
-bufferSize = Math.Max(bufferSize, maxBufferSizeByMemory);
-
-int GetPowerOfTwoLessThanOrEqualTo(long x)
+internal static class Program
 {
-    return (x <= 0 ? 0 : (1 << (int)Math.Log(x, 2)));
-}
-                 
-using var initiallySortedFiles = new BlockingCollection<string>();
-long filesMerging = 0;
-var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
-
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-var bulkTextReader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded);
-
-
-var comparer = new TextFormatDefaults.DataComparer();
-
-var bagOfSortingTasks = new ConcurrentBag<Task>();
-
-var bagOfMergingTasks = new BlockingCollection<Task>();
-await foreach (var bulkOfLines in bulkTextReader
-                   .ReadAllLinesBulkAsync(fs, cancellationToken)
-                   .WithCancellation(cancellationToken))
-{
-    //TODO:  check all task finished successfully
-
-    var task = Task.Factory.StartNew(
-        () =>
-        {
-            semaphore.Wait();
-            Array.Sort(bulkOfLines, comparer);
-            var filename = Path.GetTempFileName();
-            File.WriteAllLines(filename, bulkOfLines);
-            initiallySortedFiles.Add(filename);
-            semaphore.Release();
-        },
-        cancellationToken,
-        TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
-        TaskScheduler.Default);
+    private static readonly TimeSpan ProgramFailedTimeout = TimeSpan.FromMinutes(10);
     
-    bagOfSortingTasks.Add(task);
-}
-
-await Task.WhenAll(bagOfSortingTasks);
-
-initiallySortedFiles.CompleteAdding();
-var initiallySortedFilesCopy = initiallySortedFiles.ToArray();
-
-var filesToMerge = new ConcurrentQueue<string>();
-
-for(int i = 0; i < initiallySortedFilesCopy.Length - 1; i += 2)
-{
-    if (i + 1 == initiallySortedFilesCopy.Length)
+    //TODO: parse args
+    //TODO: filenames
+    public static async Task Main(string[] args)
     {
-        //odd number of files - we add one to the list to merge later
-        filesToMerge.Enqueue(initiallySortedFilesCopy[i + 1]);
-        break;
-    }
+#if DEBUG
+        var options = new FastConsoleSinkOptions() { UseJson = false };
+        Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
+#else
+        //Log.Logger = Logger.None;
+        var options = new FastConsoleSinkOptions() { UseJson = false };
+        Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
+#endif
+        var fileToProcess = "testdata.txt";
+        
+        var cancellationTokenSource = new CancellationTokenSource(ProgramFailedTimeout); //TODO: to constants or remove
+        var cancellationToken = cancellationTokenSource.Token;
 
-    var i1 = i;
-    var mergingTask =  Task.Factory.StartNew( 
-         async () => await MergeFiles(initiallySortedFilesCopy[i1], initiallySortedFilesCopy[i1+1], cancellationToken).ConfigureAwait(false), 
-         cancellationToken,
-         TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
-         TaskScheduler.Current);
-     
-     bagOfMergingTasks.Add(mergingTask);
-}
+        //var bufferSize = BufferSizeHelper.EstimateBufferSize();
+        var bufferSize = BufferSizeHelper.MinBufferSize/4;
+        #warning experimenting with buffersize
+        
+        Log.Logger.Information("Estimated buffer size is: '{BufferSize}' that in MB is {BufferSizeInMb}", bufferSize, bufferSize/1024/1024);
 
-foreach (var mergingTask in bagOfMergingTasks.GetConsumingEnumerable(cancellationToken))
-{
-    await mergingTask.ConfigureAwait(false);
-    await Task.Delay(smallTimeout).ConfigureAwait(false);
-}
+        var comparer = new TextFormatDefaults.DataComparer();
 
-stopwatch.Stop();
+        await using FileStream fs = File.Open(fileToProcess, FileMode.Open, FileAccess.Read);
 
-Console.WriteLine("Bye, world :"+ stopwatch.Elapsed);
-
-async Task MergeFiles(
-    string? firstFile,
-    string? secondFile,
-    CancellationToken cancellationToken1)
-{
-    await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-    Interlocked.Increment(ref filesMerging);
-    Console.WriteLine($"Started merging {firstFile} and {secondFile}");
-    var stopwatchMerge = new Stopwatch();
-    stopwatchMerge.Start();
-    var fs1 = File.OpenRead(firstFile);
-    var fs2 = File.OpenRead(secondFile);
-    //TODO: use pool of readers?
-    var bulkTextReader1 = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded);
-    var bulkTextReader2 = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded);
-    await using var enumerator1 = bulkTextReader1
-        .ReadAllLinesAsync(fs1, cancellationToken1)
-        .WithCancellation(cancellationToken1)
-        .GetAsyncEnumerator();
-    await using var enumerator2 = bulkTextReader2
-        .ReadAllLinesAsync(fs2, cancellationToken1)
-        .WithCancellation(cancellationToken1)
-        .GetAsyncEnumerator();
-
-    var fileName = Path.GetTempFileName();
-    await using var writer = new StreamWriter(Path.GetTempFileName(), append: false, Encoding.ASCII, bufferSize);
-
-    //TODO: set flushing by filesize
-    var linesCount = 0;
-    var estimatedLinesSize = 0;
-    
-    while (true)
-    {
-        var hasLines1 = await enumerator1.MoveNextAsync();
-        var hasLines2 = await enumerator2.MoveNextAsync();
-        if (!hasLines1)
-        {
-            while (await enumerator2.MoveNextAsync())
+        var bulkTextReaderPool = new ObjectPool<IBulkTextReader>(
+            () =>
             {
-                await writer.WriteAsync(enumerator2.Current);
-                linesCount++;
-            }
-
-            break;
-        }
-
-        if (!hasLines2)
+                Log.Logger.Verbose("Created new BulkTextReader");
+                return new BulkTextReader(Log.Logger, TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+            });
+          
+        using var separator = new Separator(bulkTextReaderPool, comparer);
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+        var initiallySortedFiles = await separator.SeparateAndSortAsync(fs, cancellationToken);
+        
+        if (initiallySortedFiles.Length == 1)
         {
-            while (await enumerator1.MoveNextAsync())
-            {
-                await writer.WriteAsync(enumerator1.Current);
-                linesCount++;
-            }
-
-            break;
+            File.Move(initiallySortedFiles[0], "sorted.txt", true);
+            stopwatch.Stop();
+            Log.Logger.Information("Sorted in: {StopwatchElapsed}", stopwatch.Elapsed);
+            await Log.CloseAndFlushAsync();
+            return;
         }
+        
+        var merger = new SortedFilesFilesMerger(Log.Logger, bufferSize, comparer, bulkTextReaderPool);
+        var pathToResultTempFile = await merger.MergeFilesAsync(initiallySortedFiles, cancellationToken);
+        File.Move(pathToResultTempFile, "sorted.txt", true);
 
-        if (comparer.Compare(enumerator1.Current, enumerator2.Current) <= 0)
-        {
-            await writer.WriteAsync(enumerator1.Current).ConfigureAwait(false);
-            linesCount++;
-        }
-        else
-        {
-            await writer.WriteAsync(enumerator1.Current).ConfigureAwait(false);
-            linesCount++;
-        }
+        stopwatch.Stop();
 
-        if (linesCount == 10000)
-        {
-            await writer.FlushAsync().ConfigureAwait(false);
-        }
+        Log.Logger.Information("Sorted in: {StopwatchElapsed}", stopwatch.Elapsed);
+        await Log.CloseAndFlushAsync();
     }
-
-    await writer.FlushAsync().ConfigureAwait(false);
-    writer.Close();
-    fs1.Close();
-    fs2.Close();
-    File.Delete(firstFile);
-    File.Delete(secondFile);
-    stopwatch.Stop();
-    Console.WriteLine($"Finished merging {firstFile} and {secondFile} in {stopwatch.Elapsed}");
-
-    Interlocked.Decrement(ref filesMerging);
-    
-    var haveFileToMerge = filesToMerge.TryDequeue(out var nextFileName);
-    var filesCurrentlyMerging = Interlocked.Read(ref filesMerging);
-    if (!haveFileToMerge && filesCurrentlyMerging == 0)
-    {
-        //this is a last file, all done
-        Console.WriteLine($"Last file, all done");
-        bagOfMergingTasks.CompleteAdding();
-        File.Move(fileName, "sorted.txt", true);
-        semaphore.Release();
-        return;
-    }
-
-    if (haveFileToMerge)
-    {
-        var newMergingTask = Task.Factory.StartNew(
-            async () => await MergeFiles(fileName, nextFileName, cancellationToken).ConfigureAwait(false),
-            cancellationToken,
-            TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
-            TaskScheduler.Current);
-        bagOfMergingTasks.Add(newMergingTask);
-    }
-
-    if (!haveFileToMerge && filesCurrentlyMerging > 0)
-    {
-        filesToMerge.Enqueue(fileName);
-    }
-    
-    semaphore.Release();
-    Console.WriteLine($"Finished merging {firstFile} and {secondFile} - released semaphore");
 }

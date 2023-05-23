@@ -2,6 +2,7 @@ using AltiumTestTask.Sorter;
 using AltiumTestTask.TestFileGenerator;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
+using Serilog.Core;
 
 namespace AltiumTestTask.Benchmark;
 
@@ -19,7 +20,7 @@ public class BulkTextReaderBenchmark
     [Benchmark]
     public async Task BulkTextReader()
     {
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded);
+        var reader = new BulkTextReader(Logger.None, TextFormatDefaults.IsConcatenationNeeded);
         await using var fs = File.OpenRead(Defaults.TestFilename);
         await foreach (var bulk in reader.ReadAllLinesBulkAsync(fs, CancellationToken.None))
         {

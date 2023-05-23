@@ -1,17 +1,16 @@
-using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Serilog;
 
 namespace AltiumTestTask.Sorter;
 
 public class BulkTextReader : IBulkTextReader
 {
-    public delegate bool IsConcatenationNeededCheck(string oldLine, string newLine);
-
+    private readonly ILogger _logger;
     public const int MinBufferSize = 128; //equals StreamReader.MinBufferSize
     public const int DefaultMaxBuffer = 32 * 1024 * 1024; //32MB
     public const int DefaultLineSize = 128; //set empirically, based on StreamReader code
+    public const int InitialListCapacity = 4096;
 
     public int BufferSize { get; }
 
@@ -19,7 +18,11 @@ public class BulkTextReader : IBulkTextReader
     private readonly byte[] _buffer;
     private readonly StringBuilder _lineBuilder = new StringBuilder(DefaultLineSize);
 
-    public BulkTextReader(IsConcatenationNeededCheck isConcatenationNeeded, int bufferSize = DefaultMaxBuffer)
+
+    public BulkTextReader(
+        ILogger logger,
+        IsConcatenationNeededCheck isConcatenationNeeded,
+        int bufferSize = DefaultMaxBuffer)
     {
         if (bufferSize < MinBufferSize)
         {
@@ -29,6 +32,7 @@ public class BulkTextReader : IBulkTextReader
         BufferSize = bufferSize;
         _buffer = new byte[bufferSize];
         _isConcatenationNeeded = isConcatenationNeeded;
+        _logger = logger;
     }
 
     public async IAsyncEnumerable<string[]> ReadAllLinesBulkAsync(
@@ -36,11 +40,11 @@ public class BulkTextReader : IBulkTextReader
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         int bytesRead;
-        if (stream.Length < BufferSize)
+        if (stream.Length < MinBufferSize)
         {
-            //Debug.Assert(false, $"Do not use {nameof(BulkTextReader)} with small streams. It's inefficient.");
+            _logger.Information($"Do not use {nameof(BulkTextReader)} with small streams. It's inefficient.");
             using TextReader tr = new StreamReader(stream);
-            var strings = await tr.ReadToEndAsync();
+            var strings = await tr.ReadToEndAsync().ConfigureAwait(false);
             yield return strings
                 .Split('\n')
                 .Select(s => s.TrimEnd('\r'))
@@ -49,7 +53,7 @@ public class BulkTextReader : IBulkTextReader
             yield break;
         }
 
-        var lines = new List<string>(4096);
+        var lines = new List<string>(InitialListCapacity);
         var bufferedStream = new BufferedStream(stream, BufferSize);
         using var memoryStream = new MemoryStream(_buffer, false);
         using var streamReader = new StreamReader(memoryStream);
@@ -68,7 +72,7 @@ public class BulkTextReader : IBulkTextReader
             var firstReadInNewBuffer = true;
             while (!streamReader.EndOfStream)
             {
-                var line = streamReader.ReadLine();
+                var line = await streamReader.ReadLineAsync();
                 if (string.IsNullOrEmpty(line))
                 {
                     break;
@@ -115,6 +119,7 @@ public class BulkTextReader : IBulkTextReader
             }
 
             yield return lines.ToArray();
+            _logger.Verbose("returned next bulk of {LinesCount}", lines.Count);
             lines.Clear();
         }
 
@@ -123,12 +128,15 @@ public class BulkTextReader : IBulkTextReader
         {
             var line = _lineBuilder.ToString();
             _lineBuilder.Clear();
-            yield return new []{line};
+            yield return new[] { line };
         }
     }
 
-    public async IAsyncEnumerable<string> ReadAllLinesAsync(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> ReadAllLinesAsync(
+        Stream stream,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        _logger.Debug($"started reading stream");
         await foreach (var array in ReadAllLinesBulkAsync(stream, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -137,5 +145,7 @@ public class BulkTextReader : IBulkTextReader
                 yield return line;
             }
         }
+
+        _logger.Debug($"ended reading stream");
     }
 }

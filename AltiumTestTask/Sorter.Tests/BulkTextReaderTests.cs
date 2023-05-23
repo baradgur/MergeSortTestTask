@@ -1,5 +1,5 @@
 using System.Text;
-using System.Linq;
+using Serilog.Core;
 
 namespace AltiumTestTask.Sorter.Tests;
 
@@ -19,12 +19,12 @@ public class BulkTextReaderTests
     [InlineData("123. Apple is bad\r\n456. Banana is good\n")]
     [InlineData("123. Apple is bad\n456. Banana is good\r\n")]
     [InlineData("123. Apple is bad\n456. Banana is good\n789. Tangerine is somewhat okay")]
-    public async Task StreamIsTooSmall(string data)
+    public async Task StreamIsSmall(string data)
     {
         var textBuffer = Encoding.ASCII.GetBytes(data);
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2 = new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, BulkTextReader.MinBufferSize);
+        var reader = new BulkTextReader(Logger.None, TextFormatDefaults.IsConcatenationNeeded, BulkTextReader.MinBufferSize);
         var result = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s).ToArray();
@@ -57,7 +57,7 @@ public class BulkTextReaderTests
         Assert.Equal(bufferSize * 2, textBuffer.Length);
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2 = new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+        var reader = new BulkTextReader(Logger.None,TextFormatDefaults.IsConcatenationNeeded, bufferSize);
         var result1 = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s).ToArray();
@@ -88,7 +88,7 @@ public class BulkTextReaderTests
 
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2 = new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+        var reader = new BulkTextReader(Logger.None,TextFormatDefaults.IsConcatenationNeeded, bufferSize);
         var result1 = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s).ToArray();
@@ -122,7 +122,7 @@ public class BulkTextReaderTests
 
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2 = new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+        var reader = new BulkTextReader(Logger.None,TextFormatDefaults.IsConcatenationNeeded, bufferSize);
         var result1 = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s).ToArray();
@@ -156,7 +156,7 @@ public class BulkTextReaderTests
 
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2= new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+        var reader = new BulkTextReader(Logger.None,TextFormatDefaults.IsConcatenationNeeded, bufferSize);
         var result1 = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s).ToArray();
@@ -183,7 +183,7 @@ public class BulkTextReaderTests
 
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2 = new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+        var reader = new BulkTextReader(Logger.None,TextFormatDefaults.IsConcatenationNeeded, bufferSize);
         var result1 = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s).ToArray();
@@ -210,7 +210,7 @@ public class BulkTextReaderTests
 
         using var memoryStream1 = new MemoryStream(textBuffer);
         using var memoryStream2 = new MemoryStream(textBuffer);
-        var reader = new BulkTextReader(TextFormatDefaults.IsConcatenationNeeded, bufferSize);
+        var reader = new BulkTextReader(Logger.None,TextFormatDefaults.IsConcatenationNeeded, bufferSize);
         var result1 = await reader.ReadAllLinesAsync(memoryStream1, CancellationToken.None).ToArrayAsync();
         var result2 = (await reader.ReadAllLinesBulkAsync(memoryStream2, CancellationToken.None).ToArrayAsync())
             .SelectMany(s => s)
