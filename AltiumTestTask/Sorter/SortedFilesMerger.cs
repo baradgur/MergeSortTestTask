@@ -11,7 +11,7 @@ public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(Environment.ProcessorCount);
     private readonly int _bufferSize;
     private readonly IComparer<string> _comparer;
-    private readonly ObjectPool<IBulkTextReader> _bulkTextReaderPool;
+    private readonly BulkReaderPool _bulkTextReaderPool;
     private readonly ConcurrentQueue<string> _filesToMerge = new ConcurrentQueue<string>();
     private readonly BlockingCollection<Task> _bagOfMergingTasks = new BlockingCollection<Task>();
 
@@ -22,7 +22,7 @@ public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
         ILogger logger,
         int bufferSize,
         IComparer<string> comparer,
-        ObjectPool<IBulkTextReader> bulkTextReaderPool)
+        BulkReaderPool bulkTextReaderPool)
     {
         _logger = logger;
         _bufferSize = bufferSize;

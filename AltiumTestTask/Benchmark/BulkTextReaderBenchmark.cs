@@ -1,3 +1,4 @@
+using System.Globalization;
 using AltiumTestTask.Sorter;
 using AltiumTestTask.TestFileGenerator;
 using BenchmarkDotNet.Attributes;

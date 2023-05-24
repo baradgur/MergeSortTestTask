@@ -5,13 +5,13 @@ using Serilog;
 
 namespace AltiumTestTask.Sorter;
 
-public class BulkTextReader : IBulkTextReader
+public class BulkReader
 {
     private readonly ILogger _logger;
     public const int MinBufferSize = 128; //equals StreamReader.MinBufferSize
     public const int DefaultMaxBuffer = 32 * 1024 * 1024; //32MB
     public const int DefaultLineSize = 128; //set empirically, based on StreamReader code
-    public const int InitialListCapacity = 1024 * 8;
+    public const int InitialListCapacity = 4096;
 
     public int BufferSize { get; }
 
@@ -19,8 +19,8 @@ public class BulkTextReader : IBulkTextReader
     private readonly byte[] _buffer;
     private readonly StringBuilder _lineBuilder = new StringBuilder(DefaultLineSize);
 
-
-    public BulkTextReader(
+    
+    public BulkReader(
         ILogger logger,
         IsConcatenationNeededCheck isConcatenationNeeded,
         int bufferSize = DefaultMaxBuffer)
@@ -31,7 +31,6 @@ public class BulkTextReader : IBulkTextReader
         }
 
         BufferSize = bufferSize;
-        //_buffer = new byte[bufferSize];
         _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
         _isConcatenationNeeded = isConcatenationNeeded;
         _logger = logger;

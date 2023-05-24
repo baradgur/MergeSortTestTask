@@ -18,7 +18,7 @@ public class SortedFilesMergerTests
         await File.WriteAllTextAsync(file1, data1);
         await File.WriteAllTextAsync(file2, data2);
         var comparer = new TextFormatDefaults.DataComparer();
-        var bulkTextReaderPool = new ObjectPool<IBulkTextReader>(
+        var bulkTextReaderPool = new BulkReaderPool(
             () => new BulkTextReader(Logger.None, TextFormatDefaults.IsConcatenationNeeded, 128));
         var merger = new SortedFilesFilesMerger(
             Logger.None,

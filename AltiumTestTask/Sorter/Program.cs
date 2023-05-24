@@ -19,9 +19,9 @@ internal static class Program
         var options = new FastConsoleSinkOptions() { UseJson = false };
         Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
 #else
-        //Log.Logger = Logger.None;
-        var options = new FastConsoleSinkOptions() { UseJson = false };
-        Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
+        Log.Logger = Logger.None;
+        // var options = new FastConsoleSinkOptions() { UseJson = false };
+        // Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
 #endif
         var fileToProcess = "testdata.txt";
         
@@ -29,16 +29,17 @@ internal static class Program
         var cancellationToken = cancellationTokenSource.Token;
 
         //var bufferSize = BufferSizeHelper.EstimateBufferSize();
-        var bufferSize = BufferSizeHelper.MinBufferSize/4;
+        var bufferSize = BufferSizeHelper.MinBufferSize*2;
         #warning experimenting with buffersize
-        
+
         Log.Logger.Information("Estimated buffer size is: '{BufferSize}' that in MB is {BufferSizeInMb}", bufferSize, bufferSize/1024/1024);
+        Console.WriteLine($"Estimated buffer size is: '{bufferSize}' that in MB is {bufferSize/1024/1024}");
 
         var comparer = new TextFormatDefaults.DataComparer();
 
         await using FileStream fs = File.Open(fileToProcess, FileMode.Open, FileAccess.Read);
 
-        var bulkTextReaderPool = new ObjectPool<IBulkTextReader>(
+        var bulkTextReaderPool = new BulkReaderPool(
             () =>
             {
                 Log.Logger.Verbose("Created new BulkTextReader");
@@ -50,6 +51,7 @@ internal static class Program
         stopwatch.Start();
         var initiallySortedFiles = await separator.SeparateAndSortAsync(fs, cancellationToken);
         
+        Console.WriteLine($"Finished separating in: {stopwatch.Elapsed}");
         if (initiallySortedFiles.Length == 1)
         {
             File.Move(initiallySortedFiles[0], "sorted.txt", true);
@@ -66,6 +68,7 @@ internal static class Program
         stopwatch.Stop();
 
         Log.Logger.Information("Sorted in: {StopwatchElapsed}", stopwatch.Elapsed);
+        Console.WriteLine($"Sorted in: {stopwatch.Elapsed}");
         await Log.CloseAndFlushAsync();
     }
 }

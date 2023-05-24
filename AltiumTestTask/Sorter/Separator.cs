@@ -5,10 +5,10 @@ namespace AltiumTestTask.Sorter;
 public class Separator : ISortingSeparator, IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(Environment.ProcessorCount);
-    private readonly ObjectPool<IBulkTextReader> _bulkTextReaderPool;
+    private readonly BulkReaderPool _bulkTextReaderPool;
     private readonly IComparer<string> _comparer;
 
-    public Separator(ObjectPool<IBulkTextReader> bulkTextReaderPool, IComparer<string> comparer)
+    public Separator(BulkReaderPool bulkTextReaderPool, IComparer<string> comparer)
     {
         _bulkTextReaderPool = bulkTextReaderPool ?? throw new ArgumentNullException(nameof(bulkTextReaderPool));
         _comparer = comparer;
