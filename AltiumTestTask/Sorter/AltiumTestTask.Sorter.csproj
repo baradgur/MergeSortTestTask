@@ -10,6 +10,8 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.0-preview.4.23260.4" />
       <PackageReference Include="Serilog.Sinks.FastConsole" Version="2.4.0" />
+      <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+      <PackageReference Include="System.Memory" Version="4.5.5" />
     </ItemGroup>
 
     <ItemGroup>

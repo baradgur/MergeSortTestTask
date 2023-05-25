@@ -1,0 +1,11 @@
+{
+  "properties": {
+    "runtimeOptions": {
+      "configProperties": {
+        "System.GC.LOHThreshold": 67208864,
+        "System.GC.RetainVM": true
+        //env var:  DOTNET_gcAllowVeryLargeObjects
+      }
+    }
+  }
+}

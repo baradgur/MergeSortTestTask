@@ -21,7 +21,7 @@ public class BulkTextReaderBenchmark
     [Benchmark]
     public async Task BulkTextReader()
     {
-        var reader = new BulkTextReader(Logger.None, TextFormatDefaults.IsConcatenationNeeded);
+        var reader = new BulkTextReader(Logger.None, DataFormatDefaults.IsConcatenationNeeded);
         await using var fs = File.OpenRead(Defaults.TestFilename);
         await foreach (var bulk in reader.ReadAllLinesBulkAsync(fs, CancellationToken.None))
         {

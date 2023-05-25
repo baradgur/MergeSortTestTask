@@ -17,14 +17,11 @@ public class SortedFilesMergerTests
         var files = new[] { file1, file2 };
         await File.WriteAllTextAsync(file1, data1);
         await File.WriteAllTextAsync(file2, data2);
-        var comparer = new TextFormatDefaults.DataComparer();
-        var bulkTextReaderPool = new BulkReaderPool(
-            () => new BulkTextReader(Logger.None, TextFormatDefaults.IsConcatenationNeeded, 128));
+        var comparer = new DataFormatDefaults.Comparer();
         var merger = new SortedFilesFilesMerger(
             Logger.None,
             128,
-            comparer,
-            bulkTextReaderPool);
+            comparer);
         var resultFile = await merger.MergeFilesAsync(files, CancellationToken.None);
         var result = await File.ReadAllLinesAsync(resultFile, CancellationToken.None);
         Assert.Equal(dataArray1.Length + dataArray2.Length, result.Length);
@@ -58,10 +55,10 @@ public class MergerHelperTests
         var dataArray2 = data2.Split('\n');
         var sequence2 = dataArray2.ToAsyncEnumerable();
 
-        var comparer = new TextFormatDefaults.DataComparer();
+        var comparer = new DataFormatDefaults.Comparer();
         
         var result = await MergerHelper
-            .MergePreserveOrderAsync(sequence1, sequence2, comparer, CancellationToken.None)
+            .MergeAndPreserveOrderAsync(sequence1, sequence2, comparer, CancellationToken.None)
             .ToArrayAsync();
         
         Assert.Equal(dataArray1.Length + dataArray2.Length, result.Length);

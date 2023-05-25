@@ -19,6 +19,7 @@ internal static class Program
         var options = new FastConsoleSinkOptions() { UseJson = false };
         Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
 #else
+//TODO: delete Console
         Log.Logger = Logger.None;
         // var options = new FastConsoleSinkOptions() { UseJson = false };
         // Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
@@ -35,21 +36,22 @@ internal static class Program
         Log.Logger.Information("Estimated buffer size is: '{BufferSize}' that in MB is {BufferSizeInMb}", bufferSize, bufferSize/1024/1024);
         Console.WriteLine($"Estimated buffer size is: '{bufferSize}' that in MB is {bufferSize/1024/1024}");
 
-        var comparer = new TextFormatDefaults.DataComparer();
+        var comparer = new DataFormatDefaults.Comparer();
 
         await using FileStream fs = File.Open(fileToProcess, FileMode.Open, FileAccess.Read);
-
-        var bulkTextReaderPool = new BulkReaderPool(
-            () =>
-            {
-                Log.Logger.Verbose("Created new BulkTextReader");
-                return new BulkTextReader(Log.Logger, TextFormatDefaults.IsConcatenationNeeded, bufferSize);
-            });
-          
-        using var separator = new Separator(bulkTextReaderPool, comparer);
+        
+        // var bulkTextReaderPool = new BulkReaderPool(
+        //     () =>
+        //     {
+        //         Log.Logger.Verbose("Created new BulkTextReader");
+        //         return new BulkTextReader(Log.Logger, DataFormatDefaults.IsConcatenationNeeded, bufferSize);
+        //     });
+        
+        //using var separator = new Separator(bulkTextReaderPool, comparer);
+        using var separator = new LargeFileSeparatorSorter(Log.Logger, comparer, bufferSize);
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        var initiallySortedFiles = await separator.SeparateAndSortAsync(fs, cancellationToken);
+        var initiallySortedFiles = await separator.SeparateToSortedFilesAsync(fs, cancellationToken).ConfigureAwait(false);
         
         Console.WriteLine($"Finished separating in: {stopwatch.Elapsed}");
         if (initiallySortedFiles.Length == 1)
@@ -61,7 +63,7 @@ internal static class Program
             return;
         }
         
-        var merger = new SortedFilesFilesMerger(Log.Logger, bufferSize, comparer, bulkTextReaderPool);
+        var merger = new SortedFilesFilesMerger(Log.Logger, bufferSize, comparer);
         var pathToResultTempFile = await merger.MergeFilesAsync(initiallySortedFiles, cancellationToken);
         File.Move(pathToResultTempFile, "sorted.txt", true);
 
