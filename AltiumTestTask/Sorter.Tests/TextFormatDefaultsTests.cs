@@ -6,11 +6,11 @@ public class TextFormatDefaultsTests
 {
     [Theory]
     [InlineData("123. Apple is bad", "123. Apple is bad", 0)]
-     [InlineData("987. Apple is bad", "123. Banana is good", -1)]
-     [InlineData("987. Apple is bad", "123. Apple is bad", 1)]
-     [InlineData("123. Apple is bad", "987. Apple is bad", -1)]
-     [InlineData("123. Apple is bad", "1234. Apple is bad", -1)]
-     [InlineData("123. Apple is bad", "-12. Apple is bad", 1)]
+    [InlineData("987. Apple is bad", "123. Banana is good", -1)]
+    [InlineData("987. Apple is bad", "123. Apple is bad", 1)]
+    [InlineData("123. Apple is bad", "987. Apple is bad", -1)]
+    [InlineData("123. Apple is bad", "1234. Apple is bad", -1)]
+    [InlineData("123. Apple is bad", "-12. Apple is bad", 1)]
     public void DataComparer_Compare(string x, string y, int result)
     {
         var comparer = new TextFormatDefaults.DataComparer();

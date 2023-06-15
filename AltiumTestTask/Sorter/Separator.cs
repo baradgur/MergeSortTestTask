@@ -19,7 +19,7 @@ public class Separator : ISortingSeparator, IDisposable
         var bulkTextReader = _bulkTextReaderPool.Get();
         try
         {
-            var initiallySortedFiles = new List<string>(Environment.ProcessorCount*2);
+            var initiallySortedFiles = new ConcurrentBag<string>();
             var bagOfSortingTasks = new ConcurrentBag<Task>();
 
             await foreach (var bulkOfLines in bulkTextReader
@@ -30,12 +30,18 @@ public class Separator : ISortingSeparator, IDisposable
                     () =>
                     {
                         _semaphore.Wait(cancellationToken);
-                        Array.Sort(bulkOfLines, _comparer);
-                        var filename = Path.GetTempFileName();
-                        File.WriteAllLines(filename, bulkOfLines);
-                        // ReSharper disable once AccessToDisposedClosure (because we are awaiting all tasks below)
-                        initiallySortedFiles.Add(filename);
-                        _semaphore.Release();
+                        try
+                        {
+                            Array.Sort(bulkOfLines, _comparer);
+                            var filename = Path.GetTempFileName();
+                            File.WriteAllLines(filename, bulkOfLines);
+                            // ReSharper disable once AccessToDisposedClosure (because we are awaiting all tasks below)
+                            initiallySortedFiles.Add(filename);
+                        }
+                        finally
+                        {
+                            _semaphore.Release();
+                        }
                     },
                     cancellationToken,
                     TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
@@ -46,7 +52,7 @@ public class Separator : ISortingSeparator, IDisposable
 
             await Task.WhenAll(bagOfSortingTasks).ConfigureAwait(false);
         
-            return initiallySortedFiles.AsReadOnly().ToArray();
+            return initiallySortedFiles.ToArray();
         }
         finally
         {

@@ -29,7 +29,8 @@ internal static class Program
         var cancellationToken = cancellationTokenSource.Token;
 
         //var bufferSize = BufferSizeHelper.EstimateBufferSize();
-        var bufferSize = BufferSizeHelper.MinBufferSize*2;
+        //var bufferSize = BufferSizeHelper.MinBufferSize*2;
+        var bufferSize = 1024 * 1024 * 32; //32mb
         #warning experimenting with buffersize
 
         Log.Logger.Information("Estimated buffer size is: '{BufferSize}' that in MB is {BufferSizeInMb}", bufferSize, bufferSize/1024/1024);
@@ -38,7 +39,7 @@ internal static class Program
         var comparer = new TextFormatDefaults.DataComparer();
 
         await using FileStream fs = File.Open(fileToProcess, FileMode.Open, FileAccess.Read);
-
+        
         var bulkTextReaderPool = new BulkReaderPool(
             () =>
             {
@@ -56,7 +57,7 @@ internal static class Program
         {
             File.Move(initiallySortedFiles[0], "sorted.txt", true);
             stopwatch.Stop();
-            Log.Logger.Information("Sorted in: {StopwatchElapsed}", stopwatch.Elapsed);
+            Log.Logger.Information("1 file Sorted in: {StopwatchElapsed}", stopwatch.Elapsed);
             await Log.CloseAndFlushAsync();
             return;
         }

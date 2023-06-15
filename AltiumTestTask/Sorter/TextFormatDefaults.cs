@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -23,14 +24,19 @@ public static class TextFormatDefaults
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Compare(string? x, string? y)
         {
+            Debug.Assert(x != null, "file format is incorrect");
+            Debug.Assert(y != null, "file format is incorrect");
             var span1 = x.AsSpan();
-            var dot1 = span1.IndexOf(".");
+            var dot1 = x.IndexOf('.');
             var span2 = y.AsSpan();
-            var dot2 = span2.IndexOf(".");
+            var dot2 = y.IndexOf('.');
+            Debug.Assert(dot1 != -1, "file format is incorrect");
+            Debug.Assert(dot2 != -1, "file format is incorrect");
             if (dot1 == -1 || dot2 == -1)
             {
                 return span1.CompareTo(span2, StringComparison.InvariantCulture);
             }
+            
             var stringComparison = span1[dot1..].CompareTo(span2[dot2..], StringComparison.InvariantCulture);
             return stringComparison != 0
                 ? stringComparison
