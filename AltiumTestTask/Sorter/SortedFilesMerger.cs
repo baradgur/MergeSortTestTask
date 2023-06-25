@@ -145,10 +145,10 @@ public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
                 else
                 {
                     //this is a last file, all done
-                    _bagOfMergingTasks.CompleteAdding();
+                    _result = tempFilePath;
                     //HACK: we are still waiting for the task to complete
                     //and for  _bagOfMergingTasks.GetConsumingEnumerable to stop
-                    _result = tempFilePath;
+                    _bagOfMergingTasks.CompleteAdding();
                     _logger.Debug(
                         "Unable to find a pair to merge with {File}. All files are finished merging. Done",
                         tempFilePath);
