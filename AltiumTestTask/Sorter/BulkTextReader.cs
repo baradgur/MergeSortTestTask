@@ -11,8 +11,9 @@ public class BulkTextReader : IBulkTextReader
     public const int MinBufferSize = 128; //equals StreamReader.MinBufferSize
     public const int DefaultMaxBuffer = 32 * 1024 * 1024; //32MB
     public const int DefaultLineSize = 128; //set empirically, based on StreamReader code
-    public const int InitialListCapacity = 1024 * 8;
-
+    public const int InitialListCapacity = 1024 * 32;
+    public readonly List<string> Lines = new List<string>(InitialListCapacity);
+    
     public int BufferSize { get; }
 
     private readonly IsConcatenationNeededCheck _isConcatenationNeeded;
@@ -55,14 +56,14 @@ public class BulkTextReader : IBulkTextReader
             yield break;
         }
 
-        var lines = new List<string>(InitialListCapacity);
+        
         var bufferedStream = new BufferedStream(stream, BufferSize);
         using var memoryStream = new MemoryStream(_buffer, false);
         using var streamReader = new StreamReader(memoryStream);
         while ((bytesRead = await bufferedStream.ReadAsync(_buffer, 0, BufferSize, cancellationToken)) != 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            lines.Clear();
+            Lines.Clear();
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             if (bytesRead < BufferSize)
@@ -106,23 +107,23 @@ public class BulkTextReader : IBulkTextReader
                         {
                             var result = oldLine + line;
                             //yield return new DataLineWithSeparator(result, result.IndexOf('.'));
-                            lines.Add(result);
+                            Lines.Add(result);
                             continue;
                         }
 
                         // if both lines are correct - we return both of them
-                        lines.Add(oldLine);
-                        lines.Add(line);
+                        Lines.Add(oldLine);
+                        Lines.Add(line);
                         continue;
                     }
                 }
 
-                lines.Add(line);
+                Lines.Add(line);
             }
 
-            yield return lines.ToArray();
-            _logger.Verbose("returned next bulk of {LinesCount}", lines.Count);
-            lines.Clear();
+            yield return Lines.ToArray();
+            _logger.Verbose("returned next bulk of {LinesCount}", Lines.Count);
+            Lines.Clear();
         }
 
         //last line will nothing to append to it, so we return it as is
