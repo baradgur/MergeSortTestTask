@@ -1,8 +1,5 @@
 ﻿using System.Diagnostics;
-using Microsoft.Extensions.ObjectPool;
 using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 using Serilog.Sinks.FastConsole;
 
 namespace MergeSortTestTask.Sorter;
