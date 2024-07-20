@@ -2,26 +2,6 @@ using System.Collections.Concurrent;
 
 namespace MergeSortTestTask.Sorter;
 
-// public class ObjectPool<T>
-// {
-//     private readonly ConcurrentBag<T> _objects;
-//     private readonly Func<T> _objectGenerator;
-//
-//     public ObjectPool(Func<T> objectGenerator)
-//     {
-//         _objectGenerator = objectGenerator ?? throw new ArgumentNullException(nameof(objectGenerator));
-//         _objects = new ConcurrentBag<T>();
-//     }
-//
-//     public T Get() => _objects.TryTake(out var item) ? item : _objectGenerator();
-//
-//     public void Return(T item)
-//     {
-//         item.Reset()
-//         _objects.Add(item);
-//     }
-// }
-
 public class BulkReaderPool
 {
     private readonly ConcurrentBag<BulkTextReader> _objects;
