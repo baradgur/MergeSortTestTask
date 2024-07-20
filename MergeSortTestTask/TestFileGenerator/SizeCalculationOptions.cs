@@ -1,0 +1,3 @@
+namespace MergeSortTestTask.TestFileGenerator;
+
+public record SizeCalculationOptions(SizeCalculationMethod SizeCalculationMethod, int SizeValue);
