@@ -10,7 +10,7 @@ namespace AltiumTestTask.Sorter;
 internal static class Program
 {
     private static readonly TimeSpan ProgramFailedTimeout = TimeSpan.FromMinutes(10);
-    
+
     //TODO: parse args
     //TODO: filenames
     public static async Task Main(string[] args)
@@ -24,16 +24,19 @@ internal static class Program
         // Log.Logger = new LoggerConfiguration().WriteTo.FastConsole(options).MinimumLevel.Verbose().CreateLogger();
 #endif
         var fileToProcess = "testdata.txt";
-        
-        var cancellationTokenSource = new CancellationTokenSource(ProgramFailedTimeout); //TODO: to constants or remove
+
+        var cancellationTokenSource = new CancellationTokenSource(ProgramFailedTimeout);
         var cancellationToken = cancellationTokenSource.Token;
 
         //var bufferSize = BufferSizeHelper.EstimateBufferSize();
-        var bufferSize = BufferSizeHelper.MinBufferSize*2;
-        #warning experimenting with buffersize
+        var bufferSize = BufferSizeHelper.MinBufferSize * 2;
+#warning experimenting with buffersize
 
-        Log.Logger.Information("Estimated buffer size is: '{BufferSize}' that in MB is {BufferSizeInMb}", bufferSize, bufferSize/1024/1024);
-        Console.WriteLine($"Estimated buffer size is: '{bufferSize}' that in MB is {bufferSize/1024/1024}");
+        Log.Logger.Information(
+            "Estimated buffer size is: '{BufferSize}' that in MB is {BufferSizeInMb}",
+            bufferSize,
+            bufferSize / 1024 / 1024);
+        Console.WriteLine($"Estimated buffer size is: '{bufferSize}' that in MB is {bufferSize / 1024 / 1024}");
 
         var comparer = new TextFormatDefaults.DataComparer();
 
@@ -45,12 +48,12 @@ internal static class Program
                 Log.Logger.Verbose("Created new BulkTextReader");
                 return new BulkTextReader(Log.Logger, TextFormatDefaults.IsConcatenationNeeded, bufferSize);
             });
-          
+
         using var separator = new Separator(bulkTextReaderPool, comparer);
         var stopwatch = new Stopwatch();
         stopwatch.Start();
         var initiallySortedFiles = await separator.SeparateAndSortAsync(fs, cancellationToken);
-        
+
         Console.WriteLine($"Finished separating in: {stopwatch.Elapsed}");
         if (initiallySortedFiles.Length == 1)
         {
@@ -60,7 +63,7 @@ internal static class Program
             await Log.CloseAndFlushAsync();
             return;
         }
-        
+
         var merger = new SortedFilesFilesMerger(Log.Logger, bufferSize, comparer, bulkTextReaderPool);
         var pathToResultTempFile = await merger.MergeFilesAsync(initiallySortedFiles, cancellationToken);
         File.Move(pathToResultTempFile, "sorted.txt", true);

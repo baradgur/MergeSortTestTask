@@ -16,7 +16,6 @@ public class BulkTextReaderFactory : IBulkTextReaderFactory
         _logger = logger;
     }
 
-    //TODO: use pool of readers?
     public IBulkTextReader CreateBulkTextReader()
     {
         return new BulkTextReader(_logger, _isConcatenationNeeded, _bufferSize);
