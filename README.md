@@ -1,7 +1,9 @@
 # MergeSortTestTask
 
-## Disclaimer
-I know about the 'fast and easy' implementation. But based on a task description this solution would be not always a correct one, soe I was trying to optimize the preformance as a challenge
+## Disclaimers
+1. The project is fully abandoned - tests on a real files became too time consuming (and I was afraid my SSD will suffer). I also have found a new job, so amount of free time decreased drastically. I am publishing this one in case I want to return to it someday - the challenge was a fun one
+2. I know about the 'fast and easy' implementation. But based on a task description this solution would be not always a correct one, soe I was trying to optimize the preformance as a challenge
+
 
 ## Original task
 The input is a large text file, where each line is a Number. String
