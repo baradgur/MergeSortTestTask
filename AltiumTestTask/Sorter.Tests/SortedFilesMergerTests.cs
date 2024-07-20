@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Serilog.Core;
 
-namespace AltiumTestTask.Sorter.Tests;
+namespace MergeSortTestTask.Sorter.Tests;
 
 public class SortedFilesMergerTests
 {
@@ -11,7 +11,7 @@ public class SortedFilesMergerTests
     {
         var dataArray1 = data1.Split('\n');
         var dataArray2 = data2.Split('\n');
-        
+
         var file1 = Path.GetTempFileName();
         var file2 = Path.GetTempFileName();
         var files = new[] { file1, file2 };
@@ -59,11 +59,11 @@ public class MergerHelperTests
         var sequence2 = dataArray2.ToAsyncEnumerable();
 
         var comparer = new TextFormatDefaults.DataComparer();
-        
+
         var result = await MergerHelper
             .MergePreserveOrderAsync(sequence1, sequence2, comparer, CancellationToken.None)
             .ToArrayAsync();
-        
+
         Assert.Equal(dataArray1.Length + dataArray2.Length, result.Length);
         var y = result.First();
         var isSorted = result

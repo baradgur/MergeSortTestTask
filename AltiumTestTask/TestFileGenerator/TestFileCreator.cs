@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Bogus;
 
-namespace AltiumTestTask.TestFileGenerator;
+namespace MergeSortTestTask.TestFileGenerator;
 
 public class TestFileCreator
 {
@@ -30,13 +30,13 @@ public class TestFileCreator
     public async Task CreateFile(FileInfo file, SizeCalculationOptions sizeCalculationOptions)
     {
         Randomizer.Seed = new Random(_seed);
-        
+
         //we are using a small sictionary to generate data because we need repetitions for the 'String' part.  
         var dictionary = new Faker().Lorem.Words(_dictionarySize);
         var testRowsFaker = new Faker<string>()
             .CustomInstantiator(
                 faker => $"{faker.Random.Long(_minNumber, _maxNumber)}. " +
-                    $"{string.Join(" ", faker.PickRandom(dictionary, faker.Random.Int(_minWordsInSentence, _maxWordsInSentence)))}");
+                         $"{string.Join(" ", faker.PickRandom(dictionary, faker.Random.Int(_minWordsInSentence, _maxWordsInSentence)))}");
 
         await using var fileWriter = file.CreateText();
 

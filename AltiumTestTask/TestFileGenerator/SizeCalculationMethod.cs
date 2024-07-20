@@ -1,4 +1,4 @@
-namespace AltiumTestTask.TestFileGenerator;
+namespace MergeSortTestTask.TestFileGenerator;
 
 public enum SizeCalculationMethod
 {

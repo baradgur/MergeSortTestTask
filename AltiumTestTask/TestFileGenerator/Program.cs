@@ -1,7 +1,7 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
 
-namespace AltiumTestTask.TestFileGenerator;
+namespace MergeSortTestTask.TestFileGenerator;
 
 public class Program
 {
@@ -20,19 +20,19 @@ public class Program
             description: "Units in which file size will be calculated.");
         sizeCalculationMethodOption.SetDefaultValue(Defaults.DefaultSizeCalculationMethod);
         rootCommand.AddOption(sizeCalculationMethodOption);
-        
+
         var sizeOption = new Option<int>(
             name: "--size",
             description: "Minimum size value.");
         sizeOption.SetDefaultValue(Defaults.DefaultSize);
         rootCommand.AddOption(sizeOption);
-        
+
         var seedOption = new Option<int>(
             name: "--seed",
             description: "Randomizer seed.");
         seedOption.SetDefaultValue(Defaults.DefaultRandomizerSeed);
         rootCommand.AddOption(seedOption);
-        
+
         var dictionarySizeOption = new Option<int>(
             name: "--dictionarySize",
             description: "Amount of word to be used in 'String' part generation.");
@@ -46,9 +46,9 @@ public class Program
                 var sizeCalculationOptions = new SizeCalculationOptions(sizeCalculationMethod, sizeValue);
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                
+
                 await testFileCreator.CreateFile(file, sizeCalculationOptions);
-                
+
                 stopwatch.Stop();
                 Console.WriteLine($"File '{file}' with seed '{seed}' created in '{stopwatch.Elapsed}'.");
             },

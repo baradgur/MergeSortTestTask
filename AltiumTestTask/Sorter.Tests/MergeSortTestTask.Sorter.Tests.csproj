@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Sorter\AltiumTestTask.Sorter.csproj" />
+      <ProjectReference Include="..\Sorter\MergeSortTestTask.Sorter.csproj"/>
     </ItemGroup>
 
 </Project>

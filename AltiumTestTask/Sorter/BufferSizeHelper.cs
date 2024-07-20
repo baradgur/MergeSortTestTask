@@ -1,11 +1,11 @@
 using System.Numerics;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public static class BufferSizeHelper
 {
     public static int MinBufferSize => 1024 * 1024 * 32; //32 MB
-    
+
     public static int EstimateBufferSize()
     {
         var availableMemory = GC.GetTotalMemory(false);
@@ -13,13 +13,13 @@ public static class BufferSizeHelper
         // we estimate max degree of parallelism as Environment.ProcessorCount
         // since the computation when sorting is pretty heavy,
         // we want to use as many parallel thread as possible
-        var maxMemoryByProcessorCount 
-            = GetPowerOfTwoLessThanOrEqualTo( 
+        var maxMemoryByProcessorCount
+            = GetPowerOfTwoLessThanOrEqualTo(
                 (memoryInfo.HighMemoryLoadThresholdBytes - availableMemory) / Environment.ProcessorCount);
 
         //we will merge 2 buffers in memory into 1 writer
-        var maxBufferSizeByMemoryAndProcessorCount = GetPowerOfTwoLessThanOrEqualTo( maxMemoryByProcessorCount / 3);
-        
+        var maxBufferSizeByMemoryAndProcessorCount = GetPowerOfTwoLessThanOrEqualTo(maxMemoryByProcessorCount / 3);
+
         return Math.Max(maxBufferSizeByMemoryAndProcessorCount, MinBufferSize);
     }
 

@@ -1,4 +1,4 @@
-namespace AltiumTestTask.Benchmark;
+namespace MergeSortTestTask.Benchmark;
 
 public static class Defaults
 {

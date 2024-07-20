@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 /// <summary>
 ///     Reading strings in bulk from a large stream.

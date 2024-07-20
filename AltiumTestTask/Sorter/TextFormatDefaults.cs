@@ -1,12 +1,12 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public static class TextFormatDefaults
 {
     public static char StringNumberSeparationChar = '.';
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsConcatenationNeeded(string oldLine, string line)
     {
@@ -31,6 +31,7 @@ public static class TextFormatDefaults
             {
                 return span1.CompareTo(span2, StringComparison.InvariantCulture);
             }
+
             var stringComparison = span1[dot1..].CompareTo(span2[dot2..], StringComparison.InvariantCulture);
             return stringComparison != 0
                 ? stringComparison

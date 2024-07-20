@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Serilog;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public class BulkReader
 {
@@ -19,7 +19,6 @@ public class BulkReader
     private readonly byte[] _buffer;
     private readonly StringBuilder _lineBuilder = new StringBuilder(DefaultLineSize);
 
-    
     public BulkReader(
         ILogger logger,
         IsConcatenationNeededCheck isConcatenationNeeded,

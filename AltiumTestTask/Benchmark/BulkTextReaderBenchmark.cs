@@ -1,11 +1,11 @@
 using System.Globalization;
-using AltiumTestTask.Sorter;
-using AltiumTestTask.TestFileGenerator;
+using MergeSortTestTask.Sorter;
+using MergeSortTestTask.TestFileGenerator;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using Serilog.Core;
 
-namespace AltiumTestTask.Benchmark;
+namespace MergeSortTestTask.Benchmark;
 
 [SimpleJob(RuntimeMoniker.Net60)]
 [MemoryDiagnoser]
@@ -17,7 +17,7 @@ public class BulkTextReaderBenchmark
     {
         File.ReadAllLines(Defaults.TestFilename);
     }
-    
+
     [Benchmark]
     public async Task BulkTextReader()
     {
@@ -27,7 +27,7 @@ public class BulkTextReaderBenchmark
         {
         }
     }
-    
+
     [GlobalSetup]
     public async Task Setup()
     {
@@ -36,7 +36,7 @@ public class BulkTextReaderBenchmark
             new FileInfo(Defaults.TestFilename),
             new SizeCalculationOptions(SizeCalculationMethod.MegaBytes, 100));
     }
-    
+
     [GlobalCleanup]
     public void Cleanup()
     {

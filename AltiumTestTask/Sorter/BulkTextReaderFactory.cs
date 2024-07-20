@@ -1,7 +1,7 @@
 using Microsoft.Extensions.ObjectPool;
 using Serilog;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public class BulkTextReaderFactory : IBulkTextReaderFactory
 {

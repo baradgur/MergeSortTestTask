@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Sorter\AltiumTestTask.Sorter.csproj" />
-      <ProjectReference Include="..\TestFileGenerator\AltiumTestTask.TestFileGenerator.csproj" />
+        <ProjectReference Include="..\Sorter\MergeSortTestTask.Sorter.csproj"/>
+        <ProjectReference Include="..\TestFileGenerator\MergeSortTestTask.TestFileGenerator.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

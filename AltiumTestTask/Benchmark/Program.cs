@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using BenchmarkDotNet.Running;
-using AltiumTestTask.Benchmark;
+using MergeSortTestTask.Benchmark;
 
 var summary = BenchmarkRunner.Run<BulkTextReaderBenchmark>();

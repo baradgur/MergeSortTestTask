@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 // public class ObjectPool<T>
 // {
@@ -21,7 +21,6 @@ namespace AltiumTestTask.Sorter;
 //         _objects.Add(item);
 //     }
 // }
-
 
 public class BulkReaderPool
 {

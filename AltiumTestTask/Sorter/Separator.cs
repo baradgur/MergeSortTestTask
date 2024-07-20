@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public class Separator : ISortingSeparator, IDisposable
 {
@@ -13,13 +13,13 @@ public class Separator : ISortingSeparator, IDisposable
         _bulkTextReaderPool = bulkTextReaderPool ?? throw new ArgumentNullException(nameof(bulkTextReaderPool));
         _comparer = comparer;
     }
-    
+
     public async Task<string[]> SeparateAndSortAsync(FileStream fs, CancellationToken cancellationToken)
     {
         var bulkTextReader = _bulkTextReaderPool.Get();
         try
         {
-            var initiallySortedFiles = new List<string>(Environment.ProcessorCount*2);
+            var initiallySortedFiles = new List<string>(Environment.ProcessorCount * 2);
             var bagOfSortingTasks = new ConcurrentBag<Task>();
 
             await foreach (var bulkOfLines in bulkTextReader
@@ -45,7 +45,7 @@ public class Separator : ISortingSeparator, IDisposable
             }
 
             await Task.WhenAll(bagOfSortingTasks).ConfigureAwait(false);
-        
+
             return initiallySortedFiles.AsReadOnly().ToArray();
         }
         finally

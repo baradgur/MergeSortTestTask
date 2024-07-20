@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public static class MergerHelper
 {
@@ -25,12 +25,15 @@ public static class MergerHelper
 
         await foreach (var b in bList.WithCancellation(cancellationToken))
         {
-            while (aHasItems && comparer.Compare(a.Current,b) <= 0)
+            while (aHasItems && comparer.Compare(a.Current, b) <= 0)
             {
-                yield return a.Current; aHasItems = await a.MoveNextAsync();
+                yield return a.Current;
+                aHasItems = await a.MoveNextAsync();
             }
+
             yield return b;
         }
+
         // And anything left in a
         while (aHasItems)
         {

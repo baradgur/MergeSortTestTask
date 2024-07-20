@@ -3,7 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Text;
 using Serilog;
 
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
 {
@@ -50,18 +50,19 @@ public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
                 cancellationToken,
                 TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach,
                 TaskScheduler.Current);
-            
+
             _bagOfMergingTasks.Add(mergingTask, cancellationToken);
             _logger.Debug(
                 "Added a task to merge files {File1} and {File2}",
                 initiallySortedFiles[i1],
-                initiallySortedFiles[i1+1]);
+                initiallySortedFiles[i1 + 1]);
         }
 
         foreach (var mergingTask in _bagOfMergingTasks.GetConsumingEnumerable(cancellationToken))
         {
             await mergingTask.ConfigureAwait(false);
         }
+
         _logger.Debug("Merge finished result file is {FilePath}", _result);
 #pragma warning disable CS8603 //when _bagOfMergingTasks.GetConsumingEnumerable is finished, the result will have a value
         return _result;
@@ -104,7 +105,7 @@ public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
                     estimatedFileChunkSize = 0;
                 }
             }
-            
+
             await writer.FlushAsync().ConfigureAwait(false);
             writer.Close();
             fs1.Close();
@@ -115,7 +116,7 @@ public class SortedFilesFilesMerger : ISortedFilesMerger, IDisposable
             _bulkTextReaderPool.Return(bulkTextReader2);
             Interlocked.Decrement(ref _filesMerging);
             _logger.Verbose("Merging {firstFile} and {secondFile} into {MergeFile}", firstFile, secondFile, tempFilePath);
-            
+
             var haveFileToMerge = _filesToMerge.TryDequeue(out var nextFileName);
             var filesCurrentlyMerging = Interlocked.Read(ref _filesMerging);
             if (haveFileToMerge)

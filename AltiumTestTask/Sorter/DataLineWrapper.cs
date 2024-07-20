@@ -1,4 +1,4 @@
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 public ref struct DataLineWrapper
 {

@@ -1,4 +1,4 @@
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 /// <summary>
 /// Merges already sorted files into one.

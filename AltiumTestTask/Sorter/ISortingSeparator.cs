@@ -1,4 +1,4 @@
-namespace AltiumTestTask.Sorter;
+namespace MergeSortTestTask.Sorter;
 
 /// <summary>
 /// Separates the incoming stream to sorted files.
